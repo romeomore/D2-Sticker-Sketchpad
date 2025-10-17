@@ -4,6 +4,8 @@ import "./style.css";
 document.body.innerHTML = `
   <p>Example image asset: <img src="${exampleIconUrl}" class="icon" /></p>
   <button id = "clearbutton">Clear</button>
+  <button id = "undobutton">Undo</button>
+  <button id = "redobutton">Redo</button>
   <h1>Welcome to Sticker Sketching</h1>
 `;
 
@@ -20,6 +22,7 @@ type Point = { x: number; y: number };
 let active = false;
 let lines: Point[][] = [];
 let currentLine: Point[] = [];
+const redoLines: Point[][] = [];
 
 canvas.addEventListener("mousedown", (e) => {
   active = true;
@@ -62,4 +65,20 @@ const clearButton = document.getElementById("clearbutton");
 clearButton?.addEventListener("click", () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   lines = [];
+});
+
+const undoButton = document.getElementById("undobutton");
+undoButton?.addEventListener("click", () => {
+  if (lines.length > 0) {
+    redoLines.push(lines.pop()!);
+    canvas.dispatchEvent(new Event("drawing-changed"));
+  }
+});
+
+const redoButton = document.getElementById("redobutton");
+redoButton?.addEventListener("click", () => {
+  if (redoLines.length > 0) {
+    lines.push(redoLines.pop()!);
+    canvas.dispatchEvent(new Event("drawing-changed"));
+  }
 });
