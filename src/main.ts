@@ -4,6 +4,7 @@ import "./style.css";
 document.body.innerHTML = `
   <p>Example image asset: <img src="${exampleIconUrl}" class="icon" /></p>
   <button id = "clearbutton">Clear</button>
+  <h1>Welcome to Sticker Sketching</h1>
 `;
 
 const canvas = document.createElement("canvas");
@@ -15,33 +16,50 @@ const ctx = canvas.getContext("2d");
 if (!ctx) {
   throw new Error("commit plz");
 }
-
-const cursor = { active: false, x: 0, y: 0 };
+type Point = { x: number; y: number };
+let active = false;
+let lines: Point[][] = [];
+let currentLine: Point[] = [];
 
 canvas.addEventListener("mousedown", (e) => {
-  cursor.active = true;
-  cursor.x = e.offsetX;
-  cursor.y = e.offsetY;
+  active = true;
+  currentLine = [];
+  lines.push(currentLine);
+  currentLine.push({ x: e.offsetX, y: e.offsetY });
+  canvas.dispatchEvent(new Event("drawing-changed"));
 });
 
 canvas.addEventListener("mousemove", (e) => {
-  if (cursor.active) {
-    ctx.beginPath();
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 2;
-    ctx.moveTo(cursor.x, cursor.y);
-    ctx.lineTo(e.offsetX, e.offsetY);
-    ctx.stroke();
-    cursor.x = e.offsetX;
-    cursor.y = e.offsetY;
-  }
+  if (!active) return;
+  currentLine.push({ x: e.offsetX, y: e.offsetY });
+  canvas.dispatchEvent(new Event("drawing-changed"));
 });
 
 canvas.addEventListener("mouseup", () => {
-  cursor.active = false;
+  active = false;
+});
+
+canvas.addEventListener("drawing-changed", () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const line of lines) {
+    if (!line || !line[0]) {
+      throw new Error("commit plz");
+    }
+    ctx.beginPath();
+    ctx.moveTo(line[0].x, line[0].y);
+    for (let i = 1; i < line.length; i++) {
+      const point = line[i];
+      if (!point || point.x === undefined || point.y === undefined) {
+        throw new Error("commit plz");
+      }
+      ctx.lineTo(point.x, point.y);
+    }
+    ctx.stroke();
+  }
 });
 
 const clearButton = document.getElementById("clearbutton");
 clearButton?.addEventListener("click", () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  lines = [];
 });
