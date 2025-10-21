@@ -6,6 +6,8 @@ document.body.innerHTML = `
   <button id = "clearbutton">Clear</button>
   <button id = "undobutton">Undo</button>
   <button id = "redobutton">Redo</button>
+  <button id = "thinbutton">Thin</button>
+  <button id = "thickbutton">Thick</button>
   <h1>Welcome to Sticker Sketching</h1>
 `;
 
@@ -23,11 +25,15 @@ let active = false;
 let lines: MarkerLine[] = [];
 let currentLine: MarkerLine | null = null;
 const redoLines: MarkerLine[] = [];
+let currentThickness = 2;
 
 class MarkerLine {
   points: Point[] = [];
-  constructor(startX: number, startY: number) {
+  thickness: number;
+
+  constructor(startX: number, startY: number, thickness: number) {
     this.points.push({ x: startX, y: startY });
+    this.thickness = thickness;
   }
   drag(x: number, y: number) {
     this.points.push({ x, y });
@@ -36,6 +42,7 @@ class MarkerLine {
     if (!this.points || this.points.length < 2) return;
     const start = this.points[0];
     if (!start) return;
+    ctx.lineWidth = this.thickness;
     ctx.beginPath();
     ctx.moveTo(start.x, start.y);
     for (let i = 1; i < this.points.length; i++) {
@@ -49,7 +56,7 @@ class MarkerLine {
 
 canvas.addEventListener("mousedown", (e) => {
   active = true;
-  currentLine = new MarkerLine(e.offsetX, e.offsetY);
+  currentLine = new MarkerLine(e.offsetX, e.offsetY, currentThickness);
   lines.push(currentLine);
   canvas.dispatchEvent(new Event("drawing-changed"));
 });
@@ -91,4 +98,14 @@ redoButton?.addEventListener("click", () => {
     lines.push(redoLines.pop()!);
     canvas.dispatchEvent(new Event("drawing-changed"));
   }
+});
+
+const thinButton = document.getElementById("thinbutton");
+thinButton?.addEventListener("click", () => {
+  currentThickness = 2;
+});
+
+const thickButton = document.getElementById("thickbutton");
+thickButton?.addEventListener("click", () => {
+  currentThickness = 5;
 });
