@@ -20,21 +20,43 @@ if (!ctx) {
 }
 type Point = { x: number; y: number };
 let active = false;
-let lines: Point[][] = [];
-let currentLine: Point[] = [];
-const redoLines: Point[][] = [];
+let lines: MarkerLine[] = [];
+let currentLine: MarkerLine | null = null;
+const redoLines: MarkerLine[] = [];
+
+class MarkerLine {
+  points: Point[] = [];
+  constructor(startX: number, startY: number) {
+    this.points.push({ x: startX, y: startY });
+  }
+  drag(x: number, y: number) {
+    this.points.push({ x, y });
+  }
+  display(ctx: CanvasRenderingContext2D) {
+    if (!this.points || this.points.length < 2) return;
+    const start = this.points[0];
+    if (!start) return;
+    ctx.beginPath();
+    ctx.moveTo(start.x, start.y);
+    for (let i = 1; i < this.points.length; i++) {
+      const p = this.points[i];
+      if (!p) continue;
+      ctx.lineTo(p.x, p.y);
+    }
+    ctx.stroke();
+  }
+}
 
 canvas.addEventListener("mousedown", (e) => {
   active = true;
-  currentLine = [];
+  currentLine = new MarkerLine(e.offsetX, e.offsetY);
   lines.push(currentLine);
-  currentLine.push({ x: e.offsetX, y: e.offsetY });
   canvas.dispatchEvent(new Event("drawing-changed"));
 });
 
 canvas.addEventListener("mousemove", (e) => {
-  if (!active) return;
-  currentLine.push({ x: e.offsetX, y: e.offsetY });
+  if (!active || !currentLine) return;
+  currentLine.drag(e.offsetX, e.offsetY);
   canvas.dispatchEvent(new Event("drawing-changed"));
 });
 
@@ -45,19 +67,7 @@ canvas.addEventListener("mouseup", () => {
 canvas.addEventListener("drawing-changed", () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   for (const line of lines) {
-    if (!line || !line[0]) {
-      throw new Error("commit plz");
-    }
-    ctx.beginPath();
-    ctx.moveTo(line[0].x, line[0].y);
-    for (let i = 1; i < line.length; i++) {
-      const point = line[i];
-      if (!point || point.x === undefined || point.y === undefined) {
-        throw new Error("commit plz");
-      }
-      ctx.lineTo(point.x, point.y);
-    }
-    ctx.stroke();
+    line.display(ctx);
   }
 });
 
