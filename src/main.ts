@@ -54,17 +54,64 @@ class MarkerLine {
   }
 }
 
+class ToolPreview {
+  x: number;
+  y: number;
+  thickness: number;
+
+  constructor(x: number, y: number, thickness: number) {
+    this.x = x;
+    this.y = y;
+    this.thickness = thickness;
+  }
+
+  draw(ctx: CanvasRenderingContext2D) {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.thickness / 2, 0, Math.PI * 2);
+    ctx.strokeStyle = "grey";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+}
+let toolPreview: ToolPreview | null = null;
+
 canvas.addEventListener("mousedown", (e) => {
   active = true;
   currentLine = new MarkerLine(e.offsetX, e.offsetY, currentThickness);
   lines.push(currentLine);
+  toolPreview = null;
   canvas.dispatchEvent(new Event("drawing-changed"));
 });
 
 canvas.addEventListener("mousemove", (e) => {
-  if (!active || !currentLine) return;
-  currentLine.drag(e.offsetX, e.offsetY);
-  canvas.dispatchEvent(new Event("drawing-changed"));
+  if (active && currentLine) {
+    currentLine.drag(e.offsetX, e.offsetY);
+    canvas.dispatchEvent(new Event("drawing-changed"));
+    return;
+  } else {
+    toolPreview = new ToolPreview(e.offsetX, e.offsetY, currentThickness);
+    canvas.dispatchEvent(new Event("tool-moved"));
+  }
+});
+
+canvas.addEventListener("tool-moved", () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const line of lines) {
+    line.display(ctx);
+  }
+  if (toolPreview && !active) {
+    toolPreview.draw(ctx);
+  }
+});
+
+canvas.addEventListener("drawing-changed", () => {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (const line of lines) {
+    line.display(ctx);
+  }
+  if (toolPreview && !active) {
+    toolPreview.draw(ctx);
+  }
 });
 
 canvas.addEventListener("mouseup", () => {
@@ -102,10 +149,10 @@ redoButton?.addEventListener("click", () => {
 
 const thinButton = document.getElementById("thinbutton");
 thinButton?.addEventListener("click", () => {
-  currentThickness = 2;
+  currentThickness = 4;
 });
 
 const thickButton = document.getElementById("thickbutton");
 thickButton?.addEventListener("click", () => {
-  currentThickness = 5;
+  currentThickness = 8;
 });
