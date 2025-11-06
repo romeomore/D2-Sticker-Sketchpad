@@ -217,6 +217,7 @@ thickButton?.addEventListener("click", () => {
   canvas.dispatchEvent(new Event("tool-moved"));
 });
 
+/*
 ["😀", "🎉", "🚀"].forEach((emjoi) => {
   const button = document.createElement("button");
   button.textContent = emjoi;
@@ -226,4 +227,36 @@ thickButton?.addEventListener("click", () => {
     stickerPreview = null;
     canvas.dispatchEvent(new Event("drawing-changed"));
   });
+});
+
+*/
+
+const availableStickers: string[] = ["😀", "🎉", "🚀"];
+
+function createStickerButton(emjoi: string) {
+  const button = document.createElement("button");
+  button.textContent = emjoi;
+  document.body.appendChild(button);
+  button.addEventListener("click", () => {
+    currentSticker = emjoi;
+    stickerPreview = null;
+    canvas.dispatchEvent(new Event("drawing-changed"));
+  });
+}
+
+availableStickers.forEach(createStickerButton);
+
+const newStickerButton = document.createElement("button");
+newStickerButton.textContent = "New sticker";
+document.body.appendChild(newStickerButton);
+newStickerButton.addEventListener("click", () => {
+  const text = prompt("Custom sticker text", "🧽");
+  if (text === null) return; // user cancelled
+  const trimmed = text.trim();
+  if (trimmed === "") return; // ignore empty input
+  availableStickers.push(trimmed);
+  createStickerButton(trimmed);
+  currentSticker = trimmed;
+  stickerPreview = null;
+  canvas.dispatchEvent(new Event("drawing-changed"));
 });
