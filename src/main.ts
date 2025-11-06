@@ -203,7 +203,7 @@ redoButton?.addEventListener("click", () => {
 
 const thinButton = document.getElementById("thinbutton");
 thinButton?.addEventListener("click", () => {
-  currentThickness = 4;
+  currentThickness = 2;
   currentSticker = null;
   stickerPreview = null;
   canvas.dispatchEvent(new Event("tool-moved"));
@@ -217,7 +217,7 @@ thickButton?.addEventListener("click", () => {
   canvas.dispatchEvent(new Event("tool-moved"));
 });
 // Sticker buttons
-const availableStickers: string[] = ["😀", "🎉", "🚀"];
+const availableStickers: string[] = ["😀", "🎉", "🚀", "🤣", "🤡"];
 
 function createStickerButton(emjoi: string) {
   const button = document.createElement("button");
