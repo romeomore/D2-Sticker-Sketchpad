@@ -216,7 +216,7 @@ thickButton?.addEventListener("click", () => {
   stickerPreview = null;
   canvas.dispatchEvent(new Event("tool-moved"));
 });
-
+// Sticker buttons
 const availableStickers: string[] = ["😀", "🎉", "🚀"];
 
 function createStickerButton(emjoi: string) {
