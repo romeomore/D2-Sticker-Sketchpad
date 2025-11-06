@@ -31,6 +31,7 @@ let currentThickness = 2;
 let currentSticker: string | null = null;
 const stickers: StickerPreview[] = [];
 let stickerPreview: StickerPreview | null = null;
+let currentColor = "black";
 
 class MarkerLine {
   points: Point[] = [];
@@ -84,11 +85,21 @@ class StickerPreview implements Preview {
   x: number;
   y: number;
   emjoi: string;
+  rotation: number;
+  color: string;
 
-  constructor(x: number, y: number, emjoi: string) {
+  constructor(
+    x: number,
+    y: number,
+    emjoi: string,
+    rotation: number,
+    color = "black",
+  ) {
     this.x = x;
     this.y = y;
     this.emjoi = emjoi;
+    this.rotation = rotation;
+    this.color = color;
   }
   drag(x: number, y: number) {
     this.x = x;
@@ -96,18 +107,31 @@ class StickerPreview implements Preview {
   }
   draw(ctx: CanvasRenderingContext2D) {
     ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rotation);
     const size = 30;
     ctx.font = `${size}px serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(this.emjoi, this.x, this.y);
+    // use sticker-specific color
+    ctx.fillStyle = this.color;
+    ctx.fillText(this.emjoi, 0, 0);
     ctx.restore();
   }
 }
+let currentAngle = 0;
 
 canvas.addEventListener("mousedown", (e) => {
   if (currentSticker) {
-    stickers.push(new StickerPreview(e.offsetX, e.offsetY, currentSticker));
+    stickers.push(
+      new StickerPreview(
+        e.offsetX,
+        e.offsetY,
+        currentSticker,
+        currentAngle,
+        currentColor,
+      ),
+    );
     stickerPreview = null;
     canvas.dispatchEvent(new Event("drawing-changed"));
   } else {
@@ -125,7 +149,13 @@ canvas.addEventListener("mousemove", (e) => {
     canvas.dispatchEvent(new Event("drawing-changed"));
     return;
   } else if (currentSticker) {
-    stickerPreview = new StickerPreview(e.offsetX, e.offsetY, currentSticker);
+    stickerPreview = new StickerPreview(
+      e.offsetX,
+      e.offsetY,
+      currentSticker,
+      currentAngle,
+      currentColor,
+    );
     canvas.dispatchEvent(new Event("tool-moved"));
   } else {
     toolPreview = new ToolPreview(e.offsetX, e.offsetY, currentThickness);
@@ -223,9 +253,21 @@ function createStickerButton(emjoi: string) {
   const button = document.createElement("button");
   button.textContent = emjoi;
   document.body.appendChild(button);
+
   button.addEventListener("click", () => {
     currentSticker = emjoi;
-    stickerPreview = null;
+    const randomRotation = (Math.random() * 360) * (Math.PI / 360); // keep existing rotation behavior
+    // pick a random color
+    const randomColor = `hsl(${Math.floor(Math.random() * 360)}, 80%, 50%)`;
+    currentColor = randomColor;
+    currentAngle = randomRotation;
+    stickerPreview = new StickerPreview(
+      0,
+      0,
+      emjoi,
+      currentAngle,
+      currentColor,
+    );
     canvas.dispatchEvent(new Event("drawing-changed"));
   });
 }
