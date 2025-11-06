@@ -217,20 +217,6 @@ thickButton?.addEventListener("click", () => {
   canvas.dispatchEvent(new Event("tool-moved"));
 });
 
-/*
-["😀", "🎉", "🚀"].forEach((emjoi) => {
-  const button = document.createElement("button");
-  button.textContent = emjoi;
-  document.body.appendChild(button);
-  button.addEventListener("click", () => {
-    currentSticker = emjoi;
-    stickerPreview = null;
-    canvas.dispatchEvent(new Event("drawing-changed"));
-  });
-});
-
-*/
-
 const availableStickers: string[] = ["😀", "🎉", "🚀"];
 
 function createStickerButton(emjoi: string) {
