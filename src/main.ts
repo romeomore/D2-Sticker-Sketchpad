@@ -246,3 +246,37 @@ newStickerButton.addEventListener("click", () => {
   stickerPreview = null;
   canvas.dispatchEvent(new Event("drawing-changed"));
 });
+
+const exportButton = document.createElement("button");
+exportButton.textContent = "Export PNG";
+document.body.appendChild(exportButton);
+exportButton.addEventListener("click", () => {
+  const exportCanvas = document.createElement("canvas");
+  exportCanvas.width = 1024;
+  exportCanvas.height = 1024;
+  const exportCtx = exportCanvas.getContext("2d");
+  if (!exportCtx) {
+    alert("Failed to get export context");
+    return;
+  }
+  // White background
+  exportCtx.fillStyle = "white";
+  exportCtx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+  const scaleX = exportCanvas.width / canvas.width;
+  const scaleY = exportCanvas.height / canvas.height;
+  exportCtx.save();
+  exportCtx.scale(scaleX, scaleY);
+  // Draw lines
+  for (const line of lines) {
+    line.display(exportCtx);
+  }
+  // Draw stickers
+  for (const sticker of stickers) {
+    sticker.draw(exportCtx);
+  }
+  exportCtx.restore();
+  const anchor = document.createElement("a");
+  anchor.href = exportCanvas.toDataURL("image/png");
+  anchor.download = "sticker_sketch.png";
+  anchor.click();
+});
