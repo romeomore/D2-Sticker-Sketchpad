@@ -248,7 +248,7 @@ newStickerButton.addEventListener("click", () => {
 });
 
 const exportButton = document.createElement("button");
-exportButton.textContent = "Export PNG";
+exportButton.textContent = "Export";
 document.body.appendChild(exportButton);
 exportButton.addEventListener("click", () => {
   const exportCanvas = document.createElement("canvas");
